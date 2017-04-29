@@ -1,0 +1,19 @@
+version: '2'
+services:
+  mongo:
+    image: mongo
+  bot:
+    build: .
+    command: ./scripts/start.sh
+    environment:
+      - MONGODB_URI=mongo
+      - MONGODB_TEST_DB=test
+      - PORT=8080
+      - PROJECT_NAME=nasabot
+      - PYTHONPATH=/usr/src/app
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/usr/src/app
+    depends_on:
+      - mongo
