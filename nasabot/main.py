@@ -1,7 +1,7 @@
 import asyncio
 import argparse
 import logging
-from nasabot import nasabot
+from nasabot import bot
 import sys
 
 
@@ -11,22 +11,22 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def setup():
-    bot = nasabot.Bot()
+    b = bot.Bot()
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(bot.setup())
+    loop.run_until_complete(b.setup())
 
 
 def start(forever=False):
-    bot = nasabot.Bot()
+    b = bot.Bot()
     loop = asyncio.get_event_loop()
-    app = loop.run_until_complete(bot.start(auto_start=forever))
+    app = loop.run_until_complete(b.start(auto_start=forever))
     if forever:
-        bot.story.forever(loop)
+        b.story.forever(loop)
     return app
 
 
 def parse_args(args):
-    parser = argparse.ArgumentParser(prog=nasabot..BOT_NAME)
+    parser = argparse.ArgumentParser(prog=bot.BOT_NAME)
     parser.add_argument('--setup', action='store_true', default=False, help='setup bot')
     parser.add_argument('--start', action='store_true', default=False, help='start bot')
     return parser.parse_args(args), parser
