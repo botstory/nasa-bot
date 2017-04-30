@@ -25,6 +25,7 @@ def setup(story):
             # - add quick_replies
 
             await story.say(
-                emoji.emojize(SHORT_HELP, use_aliases=True).format(**ctx['user']),
+                emoji.emojize(SHORT_HELP,
+                              use_aliases=True).format(**ctx['user']),
                 user=ctx['user']
             )
