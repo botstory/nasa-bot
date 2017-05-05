@@ -5,7 +5,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-satellite_image = 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/2012-07-09/250m/{z}/{y}/{x}.jpg'
+# satellite_image = 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/{date}/250m/{z}/{y}/{x}.jpg'
+satellite_image = 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/2017-04-12/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg'
+
+import math
+
+
+def deg2num(lat_deg, lon_deg, zoom):
+    lat_rad = math.radians(lat_deg)
+    n = 2.0 ** zoom
+    xtile = int((lon_deg + 180.0) / 360.0 * n)
+    ytile = int((1.0 - math.log(math.tan(lat_rad) + (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
+    return {
+        'x': xtile,
+        'y': ytile,
+        'z': n,
+    }
 
 
 def setup(story):
@@ -15,16 +30,25 @@ def setup(story):
         async def show_earth_of_location(ctx):
             logger.debug('# show earth of passed location')
             location = get_message_attachment(ctx, 'location')['payload']['coordinates']
-            # TODO: convert long, lat to MODIS tiles
-            logger.debug(location)
+
+            # TODO: request zoom from User
+            # TODO: request target date
+            zoom = 8
+            tile = deg2num(
+                location['lat'],
+                location['long'],
+                zoom,
+            )
             await story.send_image(
                 satellite_image.format(
-                    x=0,
-                    y=0,
-                    z=9,
+                    date='2017-04-12',
+                    x=tile['x'],
+                    y=tile['y'],
+                    z=zoom,
                 ),
                 user=ctx['user'],
             )
+
             await story.say(
                 emoji.emojize('There will come GIBS!\n'
                               ':earth_americas::earth_africa::earth_asia:',
