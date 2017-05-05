@@ -1,6 +1,7 @@
 from botstory.middlewares import any, location, option, sticker, text
 from botstory.ast.story_context import get_message_attachment
 import emoji
+from datetime import datetime, timedelta
 import logging
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,10 @@ def deg2num(lat_deg, lon_deg, zoom):
     }
 
 
+def day_before():
+    return datetime.today() - timedelta(days=1)
+
+
 def setup(story):
     async def show_image(ctx, target_date, lat, long, zoom):
         tile = deg2num(
@@ -30,7 +35,7 @@ def setup(story):
         )
         await story.send_image(
             satellite_image.format(
-                date=target_date,
+                date=target_date.isoformat(),
                 x=tile['x'],
                 y=tile['y'],
                 z=zoom,
@@ -50,7 +55,7 @@ def setup(story):
         @story.part()
         async def show_whole_earth(ctx):
             # TODO: request target date
-            await show_image(ctx, '2017-04-12', 0, 0, 0)
+            await show_image(ctx, day_before(), 0, 0, 0)
 
     @story.on(location.Any())
     def handle_location():
@@ -61,4 +66,4 @@ def setup(story):
 
             # TODO: request zoom from User
             # TODO: request target date
-            await show_image(ctx, '2017-04-12', location['lat'], location['long'], 8)
+            await show_image(ctx, day_before(), location['lat'], location['long'], 8)
