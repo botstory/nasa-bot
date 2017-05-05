@@ -43,11 +43,20 @@ def setup(story):
             user=ctx['user'],
         )
 
-        await story.say(
-            emoji.emojize('There will come GIBS!\n'
-                          ':earth_americas::earth_africa::earth_asia:',
+        await story.ask(
+            emoji.emojize('There will come GIBS!',
                           use_aliases=True),
             user=ctx['user'],
+            quick_replies=[{
+                'title': emoji.emojize(':earth_americas:', use_aliases=True),
+                'payload': 'SHOW_AMERICAS'
+            }, {
+                'title': emoji.emojize(':earth_africa:', use_aliases=True),
+                'payload': 'SHOW_AFRICA_N_EUROPE'
+            }, {
+                'title': emoji.emojize(':earth_asia:', use_aliases=True),
+                'payload': 'SHOW_ASIA'
+            }, ],
         )
 
     @story.on(text.EqualCaseIgnore('earth'))
@@ -56,6 +65,24 @@ def setup(story):
         async def show_whole_earth(ctx):
             # TODO: request target date
             await show_image(ctx, day_before(), 0, 0, 0)
+
+    @story.on(emoji.emojize(':earth_americas:', use_aliases=True))
+    def handle_america_location():
+        @story.part()
+        async def show_america(ctx):
+            await show_image(ctx, day_before(), 5, -45, 2)
+
+    @story.on(emoji.emojize(':earth_africa:', use_aliases=True))
+    def handle_africa_location():
+        @story.part()
+        async def show_africa_n_europe_(ctx):
+            await show_image(ctx, day_before(), 15, 15, 2)
+
+    @story.on(emoji.emojize(':earth_asia:', use_aliases=True))
+    def handle_asia_location():
+        @story.part()
+        async def show_asia(ctx):
+            await show_image(ctx, day_before(), 0, 45, 2)
 
     @story.on(location.Any())
     def handle_location():
