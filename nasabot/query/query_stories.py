@@ -24,6 +24,34 @@ def deg2num(lat_deg, lon_deg, zoom):
 
 
 def setup(story):
+    async def show_image(ctx, target_date, lat, long, zoom):
+        tile = deg2num(
+            lat, long, zoom,
+        )
+        await story.send_image(
+            satellite_image.format(
+                date=target_date,
+                x=tile['x'],
+                y=tile['y'],
+                z=zoom,
+            ),
+            user=ctx['user'],
+        )
+
+        await story.say(
+            emoji.emojize('There will come GIBS!\n'
+                          ':earth_americas::earth_africa::earth_asia:',
+                          use_aliases=True),
+            user=ctx['user'],
+        )
+
+    @story.on(text.EqualCaseIgnore('earth'))
+    def handle_random_location():
+        @story.part()
+        async def show_whole_earth(ctx):
+            # TODO: request target date
+            await show_image(ctx, '2017-04-12', 0, 0, 0)
+
     @story.on(location.Any())
     def handle_location():
         @story.part()
@@ -33,25 +61,4 @@ def setup(story):
 
             # TODO: request zoom from User
             # TODO: request target date
-            zoom = 8
-            tile = deg2num(
-                location['lat'],
-                location['long'],
-                zoom,
-            )
-            await story.send_image(
-                satellite_image.format(
-                    date='2017-04-12',
-                    x=tile['x'],
-                    y=tile['y'],
-                    z=zoom,
-                ),
-                user=ctx['user'],
-            )
-
-            await story.say(
-                emoji.emojize('There will come GIBS!\n'
-                              ':earth_americas::earth_africa::earth_asia:',
-                              use_aliases=True),
-                user=ctx['user'],
-            )
+            await show_image(ctx, '2017-04-12', location['lat'], location['long'], 8)
