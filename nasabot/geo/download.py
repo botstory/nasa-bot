@@ -65,7 +65,7 @@ class IntervalAnimation:
 
 
 class GIBSSource:
-    def __init__(self, pattern, *args, **kwargs):
+    def __init__(self, pattern, **kwargs):
         self.pattern = pattern
         self.values = kwargs
 
