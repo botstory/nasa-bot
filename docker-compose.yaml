@@ -14,6 +14,6 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - .:/usr/src/app
+      - .:/usr/src/app:nocopy
     depends_on:
       - mongo

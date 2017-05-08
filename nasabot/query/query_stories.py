@@ -1,44 +1,29 @@
 from botstory.middlewares import any, location, option, sticker, text
 from botstory.ast.story_context import get_message_attachment
 import emoji
-from datetime import datetime, timedelta
+from datetime import date, timedelta
 import logging
+from nasabot.geo import tiles
 
 logger = logging.getLogger(__name__)
 
-# satellite_image = 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/{date}/250m/{z}/{y}/{x}.jpg'
-satellite_image = 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/2017-04-12/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg'
-
-import math
-
-
-def deg2num(lat_deg, lon_deg, zoom):
-    lat_rad = math.radians(lat_deg)
-    n = 2.0 ** zoom
-    xtile = int((lon_deg + 180.0) / 360.0 * n)
-    ytile = int((1.0 - math.log(math.tan(lat_rad) + (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
-    return {
-        'x': xtile,
-        'y': ytile,
-        'z': n,
-    }
+satellite_image_epsg3857 = 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/{date}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg'
+satellite_image_epsg4326 = 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/{date}/250m/{z}/{y}/{x}.jpg'
 
 
 def day_before():
-    return datetime.today() - timedelta(days=1)
+    return date.today() - timedelta(days=1)
 
 
 def setup(story):
-    async def show_image(ctx, target_date, lat, long, zoom):
-        tile = deg2num(
-            lat, long, zoom,
-        )
+    async def show_image(ctx, target_date, lat, long, level):
+        tile = tiles.wgs84_tile_by_coors(lat, long, level)
         await story.send_image(
-            satellite_image.format(
+            # satellite_image_epsg3857.format(
+            satellite_image_epsg4326.format(
+                **tile,
                 date=target_date.isoformat(),
-                x=tile['x'],
-                y=tile['y'],
-                z=zoom,
+                z=level,
             ),
             user=ctx['user'],
         )
@@ -70,7 +55,7 @@ def setup(story):
     def handle_america_location():
         @story.part()
         async def show_america(ctx):
-            await show_image(ctx, day_before(), 5, -45, 2)
+            await show_image(ctx, day_before(), 5, -90, 2)
 
     @story.on(emoji.emojize(':earth_africa:', use_aliases=True))
     def handle_africa_location():
@@ -82,7 +67,25 @@ def setup(story):
     def handle_asia_location():
         @story.part()
         async def show_asia(ctx):
-            await show_image(ctx, day_before(), 0, 45, 2)
+            await show_image(ctx, day_before(), 0, 170, 2)
+
+    @story.on(text.Any())
+    def handle_list_of_coords():
+        @story.part()
+        async def use_passed_coords_to_show_earth(ctx):
+            raw_text = text.get_raw_text(ctx)
+            values = raw_text.split(',')
+            if len(values) < 2 or len(values) > 4:
+                raise NotImplemented('Should parse if got less then 2 or more the 4 values with , delimiter')
+
+            lat = float(values[0])
+            long = float(values[1])
+            if len(values) > 2:
+                zoom = int(values[2])
+            else:
+                zoom = 6
+
+            await show_image(ctx, day_before(), lat, long, zoom)
 
     @story.on(location.Any())
     def handle_location():
@@ -93,4 +96,4 @@ def setup(story):
 
             # TODO: request zoom from User
             # TODO: request target date
-            await show_image(ctx, day_before(), location['lat'], location['long'], 8)
+            await show_image(ctx, day_before(), location['lat'], location['long'], 5)
