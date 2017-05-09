@@ -1,6 +1,7 @@
 botstory==0.1
 emoji==0.4.5
 gunicorn==19.7.1
+imageio
 inflection==0.3.1
 humanize==0.5.1
 pytest==3.0.7

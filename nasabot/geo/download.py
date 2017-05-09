@@ -118,14 +118,17 @@ async def pipeline():
             z=2,
         ),
         IntervalAnimation(
-            datetime.date(2017, 1, 1),
+            datetime.date(2016, 9, 1),
             datetime.date(2017, 5, 8),
         ))
-    await animation.animate(files)
+    logger.info('# start animate')
+    await animation.animate(os.path.join(dir_path, 'tmp', 'output.gif'), files)
+    logger.info('# end animate')
+
     remove_files(files)
 
     end_time = datetime.datetime.now()
-    logger.debug('# duration', end_time - start_time)
+    logger.info('# duration', end_time - start_time)
 
 
 if __name__ == '__main__':
