@@ -29,7 +29,7 @@ async def download(filename, url, session, chunk_size):
                 break
             file.write(chunk)
     logging.info('done %s', filename)
-    return filename, (response.status, tuple(response.headers.items()))
+    return filename
 
 
 async def bound_download(filename, url, session, semaphore, chunk_size=1 << 15):
@@ -95,7 +95,15 @@ class Target:
         return os.path.join(self.root_path, uri_2_filename(url))
 
 
+def remove_files(files):
+    for file_name in files:
+        logger.debug('remove {}'.format(file_name))
+        os.remove(file_name)
+
+
 async def pipeline():
+    start_time = datetime.datetime.now()
+
     files = await download_animation(
         Target(
             os.path.join(dir_path, 'tmp')
@@ -114,8 +122,12 @@ async def pipeline():
             datetime.date(2017, 5, 8),
         ))
     await animation.animate(files)
+    remove_files(files)
+
+    end_time = datetime.datetime.now()
+    logger.debug('# duration', end_time - start_time)
 
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(pipeline)
+    loop.run_until_complete(pipeline())
