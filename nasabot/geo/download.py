@@ -95,9 +95,8 @@ class Target:
         return os.path.join(self.root_path, uri_2_filename(url))
 
 
-if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    files = loop.run_until_complete(download_animation(
+async def pipeline():
+    files = await download_animation(
         Target(
             os.path.join(dir_path, 'tmp')
         ),
@@ -113,5 +112,10 @@ if __name__ == '__main__':
         IntervalAnimation(
             datetime.date(2017, 1, 1),
             datetime.date(2017, 5, 8),
-        )))
-    animation.animate(files)
+        ))
+    await animation.animate(files)
+
+
+if __name__ == '__main__':
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(pipeline)

@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def animate(file_sequence):
+async def animate(file_sequence):
     """
 
     :param file_sequence:
