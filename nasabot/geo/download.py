@@ -5,7 +5,7 @@ import logging
 import datetime
 import os
 from slugify import slugify
-from nasabot.geo import animation
+from nasabot.geo import imageio_animation as animation_provider
 
 dir_path = os.getcwd()
 
@@ -37,7 +37,7 @@ async def bound_download(filename, url, session, semaphore, chunk_size=1 << 15):
         return await download(filename, url, session, chunk_size)
 
 
-async def download_animation(target, source, animation, num_in_parallel=4):
+async def download_animation(target, source, animation, num_in_parallel=40):
     urls = [source.get_url_by_frame(frame) for frame in animation]
 
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
@@ -118,17 +118,26 @@ async def pipeline():
             z=2,
         ),
         IntervalAnimation(
-            datetime.date(2016, 9, 1),
+            datetime.date(2017, 5, 1),
             datetime.date(2017, 5, 8),
         ))
+
+    animation_time = datetime.datetime.now()
+
     logger.info('# start animate')
-    await animation.animate(os.path.join(dir_path, 'tmp', 'output.gif'), files)
+    await animation_provider.animate(os.path.join(dir_path, 'tmp', 'output.gif'), files)
     logger.info('# end animate')
+
+    remove_time = datetime.datetime.now()
 
     remove_files(files)
 
     end_time = datetime.datetime.now()
-    logger.info('# duration', end_time - start_time)
+
+    logger.info('duration: {}'.format(end_time - start_time))
+    logger.info('- download: {}'.format(animation_time - start_time))
+    logger.info('- animation: {}'.format(remove_time - animation_time))
+    logger.info('- remove: {}'.format(end_time - remove_time))
 
 
 if __name__ == '__main__':

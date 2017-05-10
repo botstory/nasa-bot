@@ -15,5 +15,5 @@ async def animate(export_filename, file_sequence):
 
     frames = [imageio.imread(file_name) for file_name in file_sequence]
     imageio.mimsave(export_filename, frames, 'GIF',
-                    fps=30,
+                    # fps=30,
                     )
