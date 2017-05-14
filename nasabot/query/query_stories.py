@@ -3,7 +3,7 @@ from botstory.ast.story_context import get_message_attachment
 import emoji
 from datetime import date, timedelta
 import logging
-from nasabot.geo import tiles
+from nasabot.geo import tiles, animation
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +42,17 @@ def setup(story):
                 'title': emoji.emojize(':earth_asia:', use_aliases=True),
                 'payload': 'SHOW_ASIA'
             }, ],
+        )
+
+    async def show_animation(ctx, target_data, lat, long, level):
+        tile = tiles.wgs84_tile_by_coors(lat, long, level)
+        await story.say('Here is the last 2 weeks:',
+                        user=ctx['user'])
+        gif_filename = 'tmp-file-name.gif'
+        await animation.get_from().to_file(gif_filename)
+        await story.send_image(
+            gif_filename,
+            user=ctx['user'],
         )
 
     @story.on(text.EqualCaseIgnore('earth'))
