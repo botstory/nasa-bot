@@ -1,12 +1,15 @@
 from botstory.middlewares import any, location, option, sticker, text
 from botstory.ast.story_context import get_message_attachment
 import emoji
+import datetime
 from datetime import date, timedelta
 import logging
-from nasabot.geo import tiles, animation
+from nasabot.geo import animation, tiles
+import os
 
 logger = logging.getLogger(__name__)
 
+dir_path = os.getcwd()
 satellite_image_epsg3857 = 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/{date}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg'
 satellite_image_epsg4326 = 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/{date}/250m/{z}/{y}/{x}.jpg'
 
@@ -48,12 +51,29 @@ def setup(story):
         tile = tiles.wgs84_tile_by_coors(lat, long, level)
         await story.say('Here is the last 2 weeks:',
                         user=ctx['user'])
-        gif_filename = 'tmp-file-name.gif'
-        await animation.get_from().to_file(gif_filename)
+        gif_filename = os.path.join(dir_path, 'tmp', 'tmp-file-name.gif')
+        await animation.pipeline(
+            source=animation.source.GIBSSource(
+                'https://gibs.earthdata.nasa.gov/wmts/{projection}/best/{layer}/default/{date}/{resolution}/{z}/{y}/{x}.jpg',
+                layer='MODIS_Terra_CorrectedReflectance_TrueColor',
+                resolution='GoogleMapsCompatible_Level9',
+                projection='epsg3857',
+                z=level,
+                **tile,
+            ),
+            timeline=animation.timeline.Interval(
+                datetime.datetime.now() - datetime.timedelta(days=1, weeks=2),
+                datetime.datetime.now() - datetime.timedelta(days=1),
+            ),
+            target=animation.target.Gif(
+                gif_filename,
+            ),
+        )
         await story.send_image(
             gif_filename,
             user=ctx['user'],
         )
+        os.remove(gif_filename)
 
     @story.on(text.EqualCaseIgnore('earth'))
     def handle_random_location():

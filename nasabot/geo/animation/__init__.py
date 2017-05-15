@@ -1,7 +1,7 @@
 import datetime
 import logging
 import os
-from nasabot.geo.animation import download
+from nasabot.geo.animation import download, source, target, timeline
 
 logger = logging.getLogger(__name__)
 
@@ -30,3 +30,6 @@ def remove_files(files):
     for file_name in files:
         logger.debug('remove {}'.format(file_name))
         os.remove(file_name)
+
+
+__all__ = [download, pipeline, source, target, timeline]
