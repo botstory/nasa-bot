@@ -22,7 +22,7 @@ async def main():
     # 4. return already exist file
     # 5. store popularity of files and remove files that is rare used.
     hash_of_settings = uuid.uuid4()
-    dir_path = os.getcwd()
+    target_path = os.environ.get('GENERATED_STATIC_DIR', os.path.join(os.getcwd(), 'tmp'))
     await pipeline(
         source=source.GIBSSource(
             'https://gibs.earthdata.nasa.gov/wmts/{projection}/best/{layer}/default/{date}/{resolution}/{z}/{y}/{x}.jpg',
@@ -38,7 +38,7 @@ async def main():
             datetime.datetime.now() - datetime.timedelta(days=1),
         ),
         target=target.Gif(
-            os.path.join(dir_path, 'tmp', 'animation-{}.gif'.format(hash_of_settings)),
+            os.path.join(target_path, 'animation-{}.gif'.format(hash_of_settings)),
         )
     )
 
