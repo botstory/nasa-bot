@@ -1,4 +1,4 @@
-# NASA bot [![Updates](https://pyup.io/repos/github/botstory/nasa-bot/shield.svg)](https://pyup.io/repos/github/botstory/nasa-bot/) [![Python 3](https://pyup.io/repos/github/botstory/nasa-bot/python-3-shield.svg)](https://pyup.io/repos/github/botstory/nasa-bot/) 
+# NASA bot [![Updates](https://pyup.io/repos/github/botstory/nasa-bot/shield.svg)](https://pyup.io/repos/github/botstory/nasa-bot/) [![Python 3](https://pyup.io/repos/github/botstory/nasa-bot/python-3-shield.svg)](https://pyup.io/repos/github/botstory/nasa-bot/) [![Build Status](https://travis-ci.org/botstory/nasa-bot.svg?branch=master)](https://travis-ci.org/botstory/nasa-bot) 
 :globe_with_meridians: made for [Data Concierge challenge](https://2017.spaceappschallenge.org/challenges/ideate-and-create/data-concierge/)
 
 ## Run tests
