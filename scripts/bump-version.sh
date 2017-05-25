@@ -16,43 +16,43 @@ echo 'current version' ${version}
 
 target_version=$1
 
+version_array=( ${version//./ } )
+major_version=${version_array[0]}
+minor_version=${version_array[1]}
+patch_version=${version_array[2]}
+
 # major, minor, patch
 case ${target_version} in
     major)
-    major_inc=1
-    minor_inc=0
-    patch_inc=0
+    new_major_version=$((major_version + 1))
+    new_minor_version=0
+    new_patch_version=0
     echo "major update"
     shift
     ;;
     minor)
-    major_inc=0
-    minor_inc=1
-    patch_inc=0
+    new_major_version=${major_version}
+    new_minor_version=$((minor_version + 1))
+    new_patch_version=0
     echo "minor update"
     shift
     ;;
     *)
-    major_inc=0
-    minor_inc=0
-    patch_inc=1
+    new_major_version=${major_version}
+    new_minor_version=${minor_version}
+    new_patch_version=$((patch_version + 1))
     target_version=patch
     echo "patch"
     ;;
 esac
 
-echo ${target_version}
-
-version_array=( ${version//./ } )
-major_version=${version_array[0]}
-minor_version=${version_array[1]}
-patch_version=${version_array[2]}
-next_version="$((${major_version}+${major_inc})).$((${minor_version}+${minor_inc})).$((${patch_version}+${patch_inc}))"
+next_version="${new_major_version}.${new_minor_version}.${new_patch_version}"
 
 echo "next version ${next_version}"
 
 echo ${next_version} > ${DIR}/../version.txt
 echo 'updated version.txt'
+
 
 if [[ ${versions} == *${next_version}* ]]; then
    echo 'already has this version'
