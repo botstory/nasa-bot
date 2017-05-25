@@ -29,3 +29,4 @@ def setup(story):
                               use_aliases=True).format(**ctx['user']),
                 user=ctx['user']
             )
+            logger.debug('# end of say_something')
