@@ -1,6 +1,20 @@
 # NASA bot
 :globe_with_meridians: made for [Data Concierge challenge](https://2017.spaceappschallenge.org/challenges/ideate-and-create/data-concierge/)
 
+## Run tests
+
+Should have installed pytest
+
+Run inside of docker
+```bash
+docker-compose -f docker-sync-compose.yaml -f docker-compose-dev.yaml exec bot pytest
+```
+
+pure
+```bash
+pytest
+```
+
 ## More information
 
 - :memo: [Awesome List of NASA Space Apps Challenge 2017](https://gist.github.com/hyzhak/2586979d8951a6ec508faa58191395fe)
