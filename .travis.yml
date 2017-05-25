@@ -25,7 +25,7 @@ before_script:
   - mongo --version
 
 script:
-  - py.test --cov todo --cov-report term-missing
+  - py.test --cov nasabot --cov-report term-missing
 
 after_success:
   - coveralls
