@@ -1,5 +1,7 @@
-from botstory.middlewares import any, location, option, sticker, text
+import aiohttp
 from botstory.ast.story_context import get_message_attachment
+from botstory.middlewares import any, location, option, sticker, text
+from botstory.integrations.commonhttp import errors as http_errors
 import emoji
 import datetime
 import logging
@@ -146,7 +148,19 @@ def setup(story):
             else:
                 zoom = 6
 
-            await show_animation(ctx, day_before(), lat, long, zoom)
+            try:
+                await show_animation(ctx, day_before(), lat, long, zoom)
+            except http_errors.HttpRequestError as ex:
+                logger.warning('# got exception')
+                await story.ask(
+                    emoji.emojize(':confused: Got error:\n\n{}\n\nPlease retry.'.format(ex.message),
+                                  use_aliases=True),
+                    quick_replies=[{
+                        'title': 'Retry {},{},{}'.format(lat, long, zoom),
+                        'payload': 'RETRY_SHOW_EARTH_{},{},{}'.format(lat, long, zoom),
+                    }],
+                    user=ctx['user']
+                )
 
     @story.on(location.Any())
     def handle_location():
