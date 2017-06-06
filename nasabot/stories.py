@@ -1,7 +1,9 @@
+from nasabot.greetings import greeting_stories
 from nasabot.help import help_stories
 from nasabot.query import query_stories
 
 story_modules = (
+    greeting_stories,
     query_stories,
 
     # last hope :)

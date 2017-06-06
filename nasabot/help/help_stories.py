@@ -4,6 +4,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+SHORT_INTO = 'Hello {first_name}!\n' \
+             'I\'m NASA bot assistant.\n' \
+             'I\'m here to help you to find right data from NASA huge storage.\n' \
+
 SHORT_HELP = 'Hello {first_name}!\n' \
              'I\'m NASA bot assistant.\n' \
              'I\'m here to help you to find right data from NASA huge storage.\n' \
