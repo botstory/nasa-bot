@@ -95,20 +95,23 @@ async def middleware_parse_coors(ctx):
     if len(values) < 2 or len(values) > 4:
         raise NotImplemented('Should parse if got less then 2 or more the 4 values with , delimiter')
 
-    lat = float(values[0])
-    long = float(values[1])
-    if len(values) > 2:
-        zoom = int(values[2])
-    else:
-        zoom = 6
+    try:
+        lat = float(values[0])
+        long = float(values[1])
+        if len(values) > 2:
+            zoom = int(values[2])
+        else:
+            zoom = 6
 
-    return story_context.set_message_data(
-        ctx, 'location',
-        story_context.get_message_data(ctx).get('location', []) + [{
-            'lat': lat,
-            'long': long,
-            'zoom': zoom,
-        }])
+        return story_context.set_message_data(
+            ctx, 'location',
+            story_context.get_message_data(ctx).get('location', []) + [{
+                'lat': lat,
+                'long': long,
+                'zoom': zoom,
+            }])
+    except ValueError as err:
+        return ctx
 
 
 def get_last_location_data(ctx):
