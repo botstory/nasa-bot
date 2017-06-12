@@ -58,6 +58,69 @@ class UserDialogContext:
         })
 
 
+async def ask_location(story, ctx):
+    """
+    helper to ask location
+
+    :param story:
+    :param ctx:
+    :return:
+    """
+    await story.ask('Please specify interesting location',
+                    quick_replies=[{
+                        'content_type': 'location',
+                    }, {
+                        'title': 'Europe',
+                        'payload': 'SET_LOCATION_EU',
+                    }, {
+                        'title': 'US',
+                        'payload': 'SET_LOCATION_US',
+                    }, {
+                        'title': 'Ukraine',
+                        'payload': 'SET_LOCATION_UA',
+                    }, ],
+                    user=ctx['user'])
+
+
+async def middleware_parse_coors(ctx):
+    """
+    middleware which extract coords from message
+    and put it to message context parameter 'location'
+
+    :param ctx:
+    :return:
+    """
+    raw_text = text.get_raw_text(ctx)
+    values = raw_text.split(',')
+    if len(values) < 2 or len(values) > 4:
+        raise NotImplemented('Should parse if got less then 2 or more the 4 values with , delimiter')
+
+    lat = float(values[0])
+    long = float(values[1])
+    if len(values) > 2:
+        zoom = int(values[2])
+    else:
+        zoom = 6
+
+    return story_context.set_message_data(
+        ctx, 'location',
+        story_context.get_message_data(ctx).get('location', []) + [{
+            'lat': lat,
+            'long': long,
+            'zoom': zoom,
+        }])
+
+
+def get_last_location_data(ctx):
+    """
+    get last extracted location
+
+    :param ctx:
+    :return:
+    """
+    return story_context.get_message_data(ctx, 'location')[-1]
+
+
 def setup(story):
     async def show_image(ctx, target_date, lat, long, level):
         tile = tiles.wgs84_tile_by_coors(lat, long, level)
@@ -206,26 +269,17 @@ def setup(story):
         @story.part()
         async def use_passed_coords_to_show_earth(ctx):
             logger.info('# use_passed_coords_to_show_earth')
-            raw_text = text.get_raw_text(ctx)
-            values = raw_text.split(',')
-            if len(values) < 2 or len(values) > 4:
-                raise NotImplemented('Should parse if got less then 2 or more the 4 values with , delimiter')
 
-            lat = float(values[0])
-            long = float(values[1])
-            if len(values) > 2:
-                zoom = int(values[2])
-            else:
-                zoom = 6
+            ctx = await middleware_parse_coors(ctx)
+
+            location_data = get_last_location_data(ctx)
 
             dlg = UserDialogContext(ctx)
-            dlg.store_location(lat=lat, long=long, zoom=zoom)
+            dlg.store_location(**location_data)
 
             await show_animation_or_ask_retry_on_fail(
                 ctx=ctx,
-                lat=lat,
-                long=long,
-                zoom=zoom,
+                **location_data,
             )
 
     @story.on(location.Any())
