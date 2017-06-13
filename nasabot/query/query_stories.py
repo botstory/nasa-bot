@@ -1,6 +1,3 @@
-import aiohttp
-import async_timeout
-import asyncio
 from botstory.ast import story_context
 from botstory.ast.story_context import get_message_attachment
 from botstory.middlewares import any, location, option, sticker, text
@@ -9,6 +6,8 @@ import emoji
 import datetime
 import logging
 from nasabot.geo import animation, tiles
+from nasabot.query import helpers
+from nasabot.query import middlewares
 import os
 from urllib.parse import urljoin
 import uuid
@@ -56,13 +55,8 @@ class UserDialogContext:
         self.user_data['coors'].append(kwargs)
 
 
-GEOCODING_GOOGLE_API = 'https://maps.googleapis.com/maps/api/geocode/json?&address={address}&key={key}'
-
-
-async def fetch(session, url):
-    with async_timeout.timeout(10):
-        async with session.get(url) as response:
-            return await response.json()
+async def clarify_context(story, ctx):
+    pass
 
 
 async def ask_location(story, ctx):
@@ -87,83 +81,6 @@ async def ask_location(story, ctx):
                         'payload': 'SET_LOCATION_UA',
                     }, ],
                     user=ctx['user'])
-
-
-def append_location(ctx, location_data):
-    return story_context.set_message_data(
-        ctx, 'location',
-        story_context.get_message_data(ctx).get('location', []) + [location_data])
-
-
-async def middleware_parse_coors(ctx):
-    """
-    middleware which extract coords from message
-    and put it to message context parameter 'location'
-
-    :param ctx:
-    :return:
-    """
-    raw_text = text.get_raw_text(ctx)
-    values = raw_text.split(',')
-    if len(values) < 2 or len(values) > 4:
-        # Should parse if got less then 2 or more the 4 values with , delimiter
-        return ctx
-
-    try:
-        lat = float(values[0])
-        long = float(values[1])
-        if len(values) > 2:
-            zoom = int(values[2])
-        else:
-            zoom = 6
-
-        return append_location(ctx, {
-            'lat': lat,
-            'long': long,
-            'zoom': zoom,
-        })
-    except ValueError as err:
-        return ctx
-
-
-async def middleware_geocoding(ctx):
-    """
-    converting addresses into geographic coordinates
-    :param ctx:
-    :return:
-    """
-    raw_text = text.get_raw_text(ctx)
-    loop = asyncio.get_event_loop()
-    async with aiohttp.ClientSession(loop=loop) as session:
-        res = await fetch(session, GEOCODING_GOOGLE_API.format(
-            address=raw_text,
-            key=os.environ['GEOCODING_GOOGLE_API_KEY'],
-        ))
-
-        if res['status'] == 'OK' and len(res['results']) > 0:
-            logger.debug('parsed {}\nto\ngeocoding {}'.format(raw_text, res))
-            l = res['results'][0]['geometry']['location']
-            viewport = res['results'][0]['geometry']['viewport']
-            return append_location(ctx, {
-                'lat': l['lat'],
-                'long': l['lng'],
-                'viewport': viewport,
-                # TODO: get zoom from:
-                # viewport['northeast']
-                # viewport['southwest']
-                'zoom': 4,
-            })
-    return ctx
-
-
-def get_last_location_data(ctx):
-    """
-    get last extracted location
-
-    :param ctx:
-    :return:
-    """
-    return story_context.get_message_data(ctx, 'location')[-1]
 
 
 def setup(story):
@@ -315,10 +232,10 @@ def setup(story):
         async def use_passed_coords_to_show_earth(ctx):
             logger.info('# use_passed_coords_to_show_earth')
 
-            ctx = await middleware_parse_coors(ctx)
-            ctx = await middleware_geocoding(ctx)
+            ctx = await middlewares.middleware_parse_coords(ctx)
+            ctx = await middlewares.middleware_geocoding(ctx)
 
-            location_data = get_last_location_data(ctx)
+            location_data = helpers.get_last_location_data(ctx)
 
             dlg = UserDialogContext(ctx)
             dlg.store_location(**location_data)
