@@ -106,7 +106,8 @@ async def middleware_parse_coors(ctx):
     raw_text = text.get_raw_text(ctx)
     values = raw_text.split(',')
     if len(values) < 2 or len(values) > 4:
-        raise NotImplemented('Should parse if got less then 2 or more the 4 values with , delimiter')
+        # Should parse if got less then 2 or more the 4 values with , delimiter
+        return ctx
 
     try:
         lat = float(values[0])
