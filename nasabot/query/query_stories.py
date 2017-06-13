@@ -1,13 +1,12 @@
 from botstory.ast import story_context
 from botstory.ast.story_context import get_message_attachment
-from botstory.middlewares import any, location, option, sticker, text
 from botstory.integrations.commonhttp import errors as http_errors
+from botstory.middlewares import any, location, option, sticker, text
 import emoji
 import datetime
 import logging
 from nasabot.geo import animation, tiles
-from nasabot.query import helpers
-from nasabot.query import middlewares
+from nasabot.query import helpers, middlewares
 import os
 from urllib.parse import urljoin
 import uuid
@@ -42,21 +41,38 @@ class UserDialogContext:
         get last used coords
         :return:
         """
-        # TODO: raise exception if we don't have coors
+        # TODO: raise exception if we don't have coords
         try:
-            return self.user_data['coors'][-1]
+            return self.user_data['coords'][-1]
         except KeyError:
             raise ContextException()
 
     def store_location(self, **kwargs):
-        if 'coors' not in self.user_data:
-            self.user_data['coors'] = []
+        if 'coords' not in self.user_data:
+            self.user_data['coords'] = []
 
-        self.user_data['coors'].append(kwargs)
+        self.user_data['coords'].append({
+            # date could be useful when we will decided whether this coords expired or not
+            'date': datetime.datetime.utcnow(),
+            'value': kwargs,
+        })
 
 
-async def clarify_context(story, ctx):
-    pass
+async def ask_all_needed_information(story, ctx):
+    """
+    helper to query all needed information to show satellite photo
+
+    :param story:
+    :param ctx:
+    :return:
+    """
+    # TODO:
+    # ok we have: a) b)
+    #
+    # 1. could you clarify .. c)?
+    #
+    # 2. so here is photo
+    #
 
 
 async def ask_location(story, ctx):
@@ -67,6 +83,8 @@ async def ask_location(story, ctx):
     :param ctx:
     :return:
     """
+    # TODO: ask about already mentioned
+
     await story.ask('Please specify interesting location',
                     quick_replies=[{
                         'content_type': 'location',
@@ -85,7 +103,7 @@ async def ask_location(story, ctx):
 
 def setup(story):
     async def show_image(ctx, target_date, lat, long, level):
-        tile = tiles.wgs84_tile_by_coors(lat, long, level)
+        tile = tiles.wgs84_tile_by_coords(lat, long, level)
         await story.send_image(
             # satellite_image_epsg3857.format(
             satellite_image_epsg4326.format(
@@ -212,8 +230,8 @@ def setup(story):
                option.Match('RETRY_(.+)')])
     def handle_retry():
         @story.part()
-        async def use_store_coors_to_show_earth(ctx):
-            logger.info('# use_store_coors_to_show_earth')
+        async def use_store_coords_to_show_earth(ctx):
+            logger.info('# use_store_coords_to_show_earth')
             dlg = UserDialogContext(ctx)
             try:
                 location = dlg.get_last_location()
