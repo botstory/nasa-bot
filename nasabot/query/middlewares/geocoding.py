@@ -6,11 +6,20 @@ from nasabot import net
 from nasabot.query import helpers
 import os
 
-
 logger = logging.getLogger(__name__)
 
 GEOCODING_GOOGLE_API = 'https://maps.googleapis.com/maps/api/geocode/json?&address={address}&key={key}'
 
+
+# More information about google api could be found here
+#
+# # Limits:
+#
+# 2500/day for free
+# https://developers.google.com/maps/documentation/geocoding/usage-limits
+#
+# # Usage:
+# https://developers.google.com/maps/documentation/geocoding/intro
 
 async def middleware_geocoding(ctx):
     """
