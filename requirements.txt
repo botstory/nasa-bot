@@ -1,4 +1,4 @@
-botstory==0.1
+botstory==0.1.5
 emoji==0.4.5
 gunicorn==19.7.1
 imageio==2.2.0
